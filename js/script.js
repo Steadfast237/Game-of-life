@@ -1,5 +1,5 @@
 let grid = [];
-let gridSize = 16;
+let gridSize = 32;
 
 function populateGrid() {
   for (let row = 1; row <= gridSize; row++) {
@@ -63,7 +63,7 @@ function validateCell(numberOfLiveNeighbors, cell) {
   /**
     1. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
     2. Any live cell with two or three live neighbors lives on to the next generation.
-    3. Any live cell with fewer than two live neighbors dies, as if by underpopulation.
+    3. Any live cell with fewer than two live neighbors dies, as if by underpopulated.
     4. Any live cell with more than three live neighbors dies, as if by overpopulation.
    * */
 
@@ -104,23 +104,74 @@ function liveOrDeath(cellValue, arr) {
   return arr;
 }
 
-function startGame() {
+function playRound() {
+  const results = [];
+
+  liveOrDeath(1, results);
+  liveOrDeath(0, results);
+
+  results.forEach((element) => {
+    const cellRow = Number(element.split('/')[0].split('_')[0]);
+    const cellCol = Number(element.split('/')[0].split('_')[1]);
+    const cellValue = Number(element.split('/')[1]);
+
+    grid[cellRow][cellCol] = cellValue;
+  });
+
+  return results;
+}
+
+populateGrid();
+
+// DOM
+const container = document.querySelector('.container');
+const buttonStart = document.querySelector('.btn-start');
+
+function generateGrid() {
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const square = document.createElement('div');
+
+      square.style.width = `${535 / gridSize}px`;
+      square.style.outline = '1px solid grey';
+      square.style.height = 'auto';
+      square.dataset.position = `${row}_${col}`;
+
+      container.appendChild(square);
+    }
+  }
+}
+
+generateGrid();
+
+container.addEventListener('click', function (e) {
+  const node = e.target;
+
+  const cell = node.dataset.position;
+  const cellRow = Number(cell.split('_')[0]);
+  const cellCol = Number(cell.split('_')[1]);
+  const cellValue = grid[cellRow][cellCol];
+
+  node.classList.toggle('alive');
+  grid[cellRow][cellCol] = cellValue === 0 ? 1 : 0;
+});
+
+buttonStart.addEventListener('click', function (e) {
   setInterval(() => {
-    const results = [];
+    const domResult = playRound();
 
-    liveOrDeath(1, results);
-    liveOrDeath(0, results);
-
-    results.forEach((element) => {
+    domResult.forEach((element) => {
       const cellRow = Number(element.split('/')[0].split('_')[0]);
       const cellCol = Number(element.split('/')[0].split('_')[1]);
       const cellValue = Number(element.split('/')[1]);
 
-      grid[cellRow][cellCol] = cellValue;
+      const node = document.querySelector(
+        `div[data-position='${cellRow}_${cellCol}']`
+      );
+
+      cellValue === 1
+        ? node.classList.add('alive')
+        : node.classList.remove('alive');
     });
-
-    console.log(grid);
-  }, 1000);
-}
-
-// DOM
+  }, 20);
+});

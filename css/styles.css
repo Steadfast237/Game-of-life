@@ -16,3 +16,14 @@ body {
 main {
   flex-grow: 1;
 }
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 535px;
+  height: 535px;
+}
+
+.alive {
+  background-color: blue;
+}
